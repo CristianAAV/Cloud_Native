@@ -1,0 +1,228 @@
+###################################
+# USER-MANAGEMENT - RF007
+###################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-management
+  labels:
+    app: user-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-management
+
+  template:
+    metadata:
+      labels:
+        app: user-management
+    spec:
+      containers:
+        - name: user-management
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/users_management:1.8
+          env:
+            - name: "DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_user
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_pass
+            - name: "DB_HOST"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_host
+            - name: "DB_PORT"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_port
+            - name: "DB_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_name
+            - name: "SECRET_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_secret_token
+            - name: "MAX_WEBHOOK_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_webhook_delay
+            - name: "MAX_POLL_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_poll_delay
+            - name: "SUCCESS_RATE"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_success_rate
+            - name: "TRUENATIVE_PATH"
+              value: "http://service-truenative"
+            - name: "WEBHOOK_HOST"
+              value: "http://user-management-service"
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: user-management-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3000
+    type: HTTP
+    requestPath: /users/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: user-management-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "user-management-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: user-management
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 31017
+---
+###################################
+# Credit Card Management - RF006
+###################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rf-006
+  labels:
+    app: rf-006
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rf-006
+
+  template:
+    metadata:
+      labels:
+        app: rf-006
+    spec:
+      serviceAccountName: k8s-datastore-account
+      containers:
+        - name: rf-006
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/rf006:0.0.29
+          env:
+            - name: "DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_user
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_pass
+            - name: "DB_HOST"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_host
+            - name: "DB_PORT"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_port
+            - name: "DB_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_name
+            - name: "SECRET_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_secret_token
+            - name: "MAX_WEBHOOK_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_webhook_delay
+            - name: "MAX_POLL_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_poll_delay
+            - name: "SUCCESS_RATE"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_success_rate
+            - name: "DATASTORE_PROJECT_ID"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: datastore_project_id
+            - name: "DATASTORE_CREDIT_CARD_DATABASE"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: datastore_credit_card_database
+            - name: "USERS_PATH"
+              value: "http://user-management-service"
+            - name: "TRUENATIVE_PATH"
+              value: "http://service-truenative"
+            - name: "EMAIL_PATH"
+              value: "https://email-service-441252389525.us-central1.run.app/api/emails/notify-credit-card"
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: rf-006-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3000
+    type: HTTP
+    requestPath: /credit-cards/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rf-006-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "rf-006-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: rf-006
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 31016

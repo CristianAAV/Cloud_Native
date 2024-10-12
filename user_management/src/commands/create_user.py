@@ -3,7 +3,7 @@ from ..models.user import User, UserSchema, CreatedUserJsonSchema
 from ..session import Session
 from ..errors.errors import IncompleteParams, UserAlreadyExists
 from sqlalchemy import or_
-
+from .user_verification import UserVerification
 
 class CreateUser(BaseCommannd):
     def __init__(self, data):
@@ -27,6 +27,8 @@ class CreateUser(BaseCommannd):
 
             new_user = CreatedUserJsonSchema().dump(user)
             session.close()
+
+            UserVerification(self.data, new_user['id']).execute()
 
             return new_user
         except TypeError:

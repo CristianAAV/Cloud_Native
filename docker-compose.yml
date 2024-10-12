@@ -1,4 +1,3 @@
-# schema: https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 version: '3.8'
 
 services:
@@ -127,57 +126,6 @@ services:
       retries: 5
     networks:
       - offer_net
-  scores:
-    build:
-      context: ./scores
-      dockerfile: Dockerfile
-    ports:
-      - "3012:3012"
-    environment:
-      DB_NAME: monitor_scores
-      DB_HOST: scores_db
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      CONFIG_PORT: 3012
-      USERS_PATH: "http://users:3000"
-    depends_on:
-      scores_db:
-        condition: service_healthy
-    networks:
-      - scores_net
-      - app_net
-  scores_db:
-    image: postgres
-    environment:
-      POSTGRES_DB: monitor_scores
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 2s
-      timeout: 5s
-      retries: 5
-    networks:
-      - scores_net
-  rf005:
-    build:
-      context: ./rf005-posts-id
-      dockerfile: Dockerfile
-    ports:
-      - "3007:3007"
-    environment:
-      USERS_PATH: http://users:3000
-      POSTS_PATH: http://posts:3001
-      ROUTES_PATH: http://routes:3002
-      OFFERS_PATH: http://offers:3003
-      SCORES_PATH: http://scores:3012
-    depends_on:
-      posts_db:
-        condition: service_healthy
-    networks:
-      - rf005_net
-      - app_net
 
 networks:
   user_net:
@@ -187,10 +135,6 @@ networks:
   offer_net:
     driver: bridge
   route_net:
-    driver: bridge
-  scores_net:
-    driver: bridge
-  rf005_net:
     driver: bridge
   app_net:
     driver: bridge

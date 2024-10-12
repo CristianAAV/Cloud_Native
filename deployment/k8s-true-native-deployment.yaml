@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truenative
+  labels:
+    app: truenative
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: truenative
+  template:
+    metadata:
+      labels:
+        app: truenative
+    spec:
+      containers:
+        - name: truenative
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/true-native:2.0.0
+          ports:
+            - containerPort: 3000
+          imagePullPolicy: Always
+          env:
+            - name: "SECRET_TOKEN"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_secret_token
+            - name: "MAX_WEBHOOK_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_webhook_delay
+            - name: "MAX_POLL_DELAY"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_max_poll_delay
+            - name: "SUCCESS_RATE"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: true_native_success_rate
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+          
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: truenative-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3000
+    type: HTTP
+    requestPath: /native/ping
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: service-truenative
+  annotations:
+    cloud.google.com/backend-config: '{"default": "truenative-config"}'
+spec:
+  type: NodePort
+  selector:
+    app: truenative
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 31018

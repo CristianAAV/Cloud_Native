@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway-ingress-true-native
+  labels:
+    name: gateway-ingress-true-native
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /native
+        pathType: Prefix
+        backend:
+          service:
+            name: service-truenative
+            port: 
+              number: 80
+      - path: /users
+        pathType: Prefix
+        backend:
+          service:
+            name: user-management-service
+            port:
+              number: 80
+      - path: /credit-cards
+        pathType: Prefix
+        backend:
+          service:
+            name: rf-006-service
+            port:
+              number: 80

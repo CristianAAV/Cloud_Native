@@ -26,3 +26,28 @@ class NotToken(ApiError):
 class Unauthorized(ApiError):
     code = 401
     description = "Unauthorized"
+
+class NotVerified(ApiError):
+    code = 401
+    description = "User is not verified"
+
+class ExternalError(ApiError):
+    DEFAULT_MESSAGE = "External error"
+
+    code = 422  # Default
+    description = DEFAULT_MESSAGE
+
+    def __init__(self, response):
+        self.code = response.status_code
+        message = self.message_from_response(response)
+        if message:
+            self.description = message
+
+    def message_from_response(self, response):
+        try:
+            json = response.json()
+            if 'msg' in json:
+                return json['msg']
+        except:
+            ...
+        return None

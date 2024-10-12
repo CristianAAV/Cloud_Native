@@ -9,6 +9,9 @@ Para la entrega 1, se desarrollaron los servicios solicitados segun el siguiente
 - [RF003](#rf003)
 - [RF004](#rf004)
 - [RF005](#rf005)
+- [RF006](#rf006)
+- [Email Service](#email-management)
+- [RF007](#rf007)
 
 # Gestión de usuarios
 
@@ -1696,3 +1699,575 @@ Recuerda reemplazar `<IP_DEL_CLUSTER>`, <ID> y `<TOKEN>` con la dirección IP de
 Cristian Arnulfo Arias Vargas  
 Correo electrónico: ca.ariasv1@uniandes.edu.co
 
+
+# EMAIL MANAGEMENT
+
+Este servicio corresponde al servicio de notificaciones de usuario. 
+
+## Índice
+
+1. [Estructura](#1-estructura)
+2. [Despliegue](#2-despliegue)
+3. [Pruebas en Postman](#3-pruebas-en-postman)
+4. [Autor](#4-autor)
+
+## 1. Estructura
+
+La estructura del servicio incluye los siguientes componentes:
+
+- **controllers/emailController.js**: Contiene la logica de validacion de campos en el body del request y solicita al servicio la funcion encargada de enviar los emails.
+- **routes/emailRoutes.js**: Contiene las rutas del servicio.
+- **services/emailService.js**: Contiene la lógica para el envío de correos electrónicos utilizando nodemailer y las variables de entorno necesarias para la configuración del servidor SMTP.
+- **app.js**: Archivo principal que configura los endpoints de la API y gestiona las solicitudes para enviar notificaciones.
+
+## 2. Despliegue
+
+### Ejecutar el Proyecto Localmente
+
+Para ejecutar el proyecto localmente, asegúrate de tener Node.js y npm instalados. Luego, ejecuta el siguiente comando en la terminal:
+
+MAIL_MAILER='smtp' MAIL_HOST='smtp.your_host.com' MAIL_PORT='587' MAIL_USERNAME='tu_usuario' MAIL_PASSWORD='tu_contraseña' MAIL_ENCRYPTION='tls' MAIL_FROM_ADDRESS='tu_correo' npm start
+
+
+### Despliegue en Google Cloud Platform (GCP) - Cloud Run
+
+Para desplegar el servicio en Cloud Run, sigue estos pasos:
+
+1. **Construir la imagen de Docker**:
+   Asegúrate de tener un Dockerfile en tu proyecto. Luego, ejecuta el siguiente comando:
+
+   ```bash 
+   gcloud builds submit --tag gcr.io/uandes-native-433403/email-service
+   ```
+
+2. **Desplegar en Cloud Run**:
+  Una vez que la imagen esté construida, despliega el servicio usando el siguiente comando:
+  ```bash 
+  gcloud run deploy email-service \
+  --image gcr.io/uandes-native-433403/email-service \
+  --platform managed \
+  --region us-central1 \ 
+  --allow-unauthenticated \
+  --set-env-vars MAIL_MAILER='smtp',MAIL_HOST='smtp.tu_hosting.com',MAIL_PORT='587',MAIL_USERNAME='tu_usuario',MAIL_PASSWORD='tu_contraseña',MAIL_ENCRYPTION='tls',MAIL_FROM_ADDRESS='tu_correo'
+  ```
+
+## 3. Pruebas en Postman
+
+Los endpoints disponibles para enviar notificaciones son:
+
+### 1. Notificación de Tarjeta de Crédito
+
+**Endpoint**: `POST https://email-service-441252389525.us-central1.run.app/api/emails/notify-credit-card`
+
+**Cuerpo JSON**:
+
+```json
+{ 
+  "email": "jcamilovallejos@gmail.com", 
+  "cardStatus": "ACEPTADA", 
+  "cardLastDigits": "1234", 
+  "token": "TOKEN123", 
+  "RUV": "RUV123456"
+}
+
+```
+
+**Campos Requeridos:**
+- `email`: Correo electrónico del usuario.
+- `cardStatus`: Estado de la tarjeta, debe ser `ACEPTADA` o `RECHAZADA`.
+- `cardLastDigits`: Últimos 4 dígitos de la tarjeta de crédito.
+- `token`: Token generado (solo si `cardStatus` es `ACEPTADA`).
+- `RUV`: Número de identificación del usuario.
+
+**Respuestas:**
+- `200 OK`: Correo electrónico enviado con éxito.
+- `404 Not Found`: Faltan datos requeridos para enviar el correo electrónico.
+- `400 Bad Request`: El estado de la tarjeta debe ser `ACEPTADA` o `RECHAZADA`.
+
+### 2. Notificación de Verificación de Usuario
+
+**Endpoint**: `POST https://email-service-441252389525.us-central1.run.app/api/emails/notify-user-verification`
+
+**Cuerpo JSON**:
+
+```json
+{ 
+  "email": "jcamilovallejos@gmail.com", "userStatus": "VERIFICADO", 
+  "RUV": "RUV123456" 
+}
+```
+
+**Campos Requeridos:**
+- `email`: Correo electrónico del usuario.
+- `userStatus`: Estado del usuario, debe ser `VERIFICADO` o `NO_VERIFICADO`.
+- `RUV`: Número de identificación del usuario.
+
+**Respuestas:**
+- `200 OK`: Correo electrónico enviado con éxito.
+- `404 Not Found`: Faltan datos requeridos para enviar el correo electrónico.
+- `400 Bad Request`: El estado del usuario debe ser `VERIFICADO` o `NO_VERIFICADO`.
+
+## 4. Autor
+
+Juan Camilo Vallejos Guerreor
+
+
+
+# RF006
+
+Este servicio corresponde a crear una oferta para una publicación.
+
+## Índice
+
+1. [Disposición](#1-disposición)
+2. [Despliegue](#2-despliegue)
+3. [Consumo](#3-consumo)
+4. [Pruebas en postman](#4-pruebas-postman-2)
+5. [Autor](#5-autor-2)
+
+## 1. Disposición
+
+La disposición del servicio es la siguiente:
+```
+rf006
+│   .gitignore
+│   Dockerfile
+│   fileTree.txt
+│   go.mod
+│   go.sum
+│   main.go
+│   test.sh
+│
+├───mocks
+│       mock_authenticator.go
+│       mock_http.go
+│
+├───model
+│       credit_card.go
+│       models.go
+│
+├───routes
+│       get.go
+│       post.go
+│       reset.go
+│
+├───services
+│       poller.go
+│
+└───utils
+        auth.go
+        config.go
+        http.go
+        parse.go
+```
+
+
+## 2. Despliegue
+
+El siguiente microservicio puede ser desplegado en Kubernetes a través del siguiente comando:
+
+```sh
+cd deployment
+kubectl apply -f k8s-componentes-entrega-3.yaml
+kubectl apply -f k8s-true-native-deployment.yaml
+kubectl apply -f k8s-ingress-true-native.yaml
+```
+Con esto bastaría para desplegar el microservicio en caso de que sea necesario desplegarlo en Kubernetes. Es importante tener en cuenta que se tiene que tener la última imágen y esta imágen debe ser accesible desde su cluster.
+
+## 3. Consumo
+
+Una vez que los microservicios estén en ejecución, puedes hacer solicitudes al servidor en la siguiente dirección:
+
+**URL del microservicio:**  
+`http://<IP_DEL_CLUSTER>/credit-cards`
+
+#### Descripción
+
+La siguiente es la definición de endpoint que permite crear una Tarjeta de Credito
+
+#### Método
+POST
+
+#### Ruta
+/rf006/credit-cards
+
+#### Parámetros
+Identificador de la publicación a la que se quiere asociar la oferta.
+
+#### Encabezados
+`Authorization: Bearer <token>`
+
+#### Cuerpo
+```json
+{
+    "cardNumber": "numero de tarjeta",
+    "cvv": "cvv tarjeta",
+    "expirationDate": "expiracion de tarjeta en formato YY/MM",
+    "cardHolderName": "Nombre del dueño de la"
+} 
+```
+
+### 4. Pruebas postman
+
+#### 4.1 Creación del Usuario
+
+Primero, es necesario crear un usuario para poder interactuar con el sistema. Para ello, envía una solicitud `POST` al endpoint de creación de usuarios:
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/users`
+
+**Ejemplo de solicitud `POST` para crear un usuario:**
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "andres",
+  "password": "tuContraseñaSegura",
+  "email": "af.losada@uniandes.edu.co",
+  "dni": "123456789",
+  "fullName": "AndresLosada",
+  "phoneNumber": "+573001234567"
+}'
+```
+
+#### 4.2 Obtención del Token
+Una vez creado el usuario, debes autenticarte para obtener un token que te permitirá hacer solicitudes al microservicio rf003.
+
+URL para obtener el token de autenticación:
+http://<IP_DEL_CLUSTER>/users/auth
+
+Ejemplo de solicitud POST para autenticar y obtener el token:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users/auth' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "andres",
+  "password": "tuContraseñaSegura"
+}'
+```
+
+El token obtenido deberá ser incluido en las siguientes solicitudes a los endpoints.
+
+#### 4.3 Solicitudes al Microservicio rf006
+Después de obtener el token de autenticación, ya puedes interactuar con el microservicio rf006. Aquí tienes un ejemplo de cómo crear un post utilizando el token.
+
+URL del microservicio rf006:
+http://<IP_DEL_CLUSTER>/rf006/credit-cards
+
+Ejemplo de solicitud POST para crear un post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf006/credit-cards' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data '{
+    "cardNumber": "{{CARD_NUMBER}}",
+    "cvv": "{{CARD_CVV}}",
+    "expirationDate": "{{CARD_EXPIRATIONDATE}}",
+    "cardHolderName": "{{CARD_HOLDERNAME}}"
+}'
+```
+
+## 5. Autor
+
+Andrés Felipe Losada Luna
+Correo electrónico: af.losada@uniandes.edu.co
+
+
+
+
+# RF007
+
+Este servicio corresponde a la verificación de identidad de un usuario cuando es creado.
+
+
+## Índice
+
+1. [Disposición](#1-disposición-3)
+2. [Despliegue](#2-despliegue-4)
+3. [Consumo](#3-consumo-3)
+4. [Pruebas en postman](#4-pruebas-postman-4)
+5. [Autores](#5-autores)
+
+## 1. Disposición
+
+La disposición del servicio es la siguiente:
+```
+user_management/
+│   Dockerfile
+│   Pipfile
+│   Pipfile.lock
+│   README.md
+│   docker-compose.yml
+│   requirements.txt
+│
+├───src
+│   │   __init__.py
+│   │   main.py
+│   │   session.py
+│   ├───blueprints
+│   │       users.py
+│   ├───commands
+│   │       __init__.py
+│   │       base_command.py
+│   │       create_user.py
+│   │       generate_token.py
+│   │       get_user.py
+│   │       reset.py
+│   │       update_score.py
+│   │       update_user.py
+│   │       user_verification.py
+│   ├───errors
+│   │       __init__.py
+│   │       errors.py
+│   └───models
+│           __init__.py
+│           model.py
+│           user.py
+│
+└───tests
+    │   __init__.py
+    │   conftest.py
+    ├───blueprints
+    │       test_users.py
+    ├───commands
+    │       test_create_user.py
+    │       test_generate_token.py
+    │       test_get_user.py
+    │       test_reset.py
+    │       test_update_user.py
+    └───utils
+            constants.py
+```
+
+
+## 2. Despliegue
+
+para el siguiente microservicio, es necesario generar el despliegue de la imagen del TrueNative y el microservicio de gestion de usuarios, estos pueden ser desplegados en Kubernetes a través del siguiente comando:
+
+```sh
+cd deployment
+kubectl apply -f k8s-componentes-entrega-3.yaml
+kubectl apply -f k8s-true-native-deployment.yaml
+kubectl apply -f k8s-ingress-true-native.yaml
+```
+Con esto bastaría para desplegar el microservicio en caso de que sea necesario desplegarlo en Kubernetes. Es importante tener en cuenta que se tiene que tener la última imágen y esta imágen debe ser accesible desde su cluster.
+
+## 3. Consumo
+
+Una vez que los microservicios estén en ejecución, puedes hacer solicitudes al servidor en la siguiente dirección:
+
+Primero podemos validar el estado del despliegue del servidor TrueNative de la siguiente forma. }
+
+**URL del TrueNative:**  
+`http://<IP_DEL_CLUSTER>/native/ping`
+
+este debe devolver como respuesta pong.
+
+Una vez validado el servicio del TrueNative, procedemos a realizar la creacion de un nuevo usuario. 
+**URL del microservicio:**  
+```
+curl --location 'http://{{IP_DEL_CLUSTER}}/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "{{USER_USERNAME}}",
+    "password": "{{USER_PASSWORD}}",
+    "email": "{{USER_EMAIL}}",
+    "dni": "{{USER_DNI}}",
+    "fullName": "{{USER_FULLNAME}}",
+    "phoneNumber": "{{USER_PHONENUMBER}}"
+}'
+```
+
+#### Descripción
+
+La siguiente es la definición del endpoint realiza la creacion de usuario, a su vez realiza la solicitud para la verificación de identidad de usuarios a travez del servidor del TrueNative.
+
+#### Método
+POST
+
+#### Ruta
+/users
+
+#### Parámetros
+Datos del usuario que requiere verificación de identidad, como identificación y otros datos personales.
+
+#### Encabezados
+`Authorization: Bearer <token>`
+
+#### Cuerpo
+```json
+{
+    "username": "nombre de cuenta del usuario",
+    "password": "contraseña del usuario",
+    "email": "email del usuario",
+    "dni": "Numero de identidad",
+    "fullName": "nombre completo del usuario",
+    "phoneNumber": "numero telefonico del usuario"
+}
+```
+
+### 4. Pruebas postman
+
+#### 4.1 Creación del Usuario
+
+Primero, es necesario crear un usuario con el estado POR_VERIFICAR. Para ello, envía una solicitud POST al endpoint de creación de usuarios:
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/users`
+
+**Ejemplo de solicitud `POST` para crear un usuario:**
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "Cristian",
+  "password": "tuContraseñaSegura",
+  "email": "ca.ariasv1@uniandes.edu.co",
+  "dni": "123456789",
+  "fullName": "CristianArias",
+  "phoneNumber": "+573152988336"
+}'
+```
+
+Una vez realizada la solicitud `POST` de creacion del usuario podemos validar el estado en el cual se encuentra la verificacion del usuario
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/native/verify/log`
+
+```bash
+curl -X GET http://<IP_DEL_CLUSTER>/native/verify/log
+```
+Este devuelve o muestra un log de eventos de creacion y validacion de usuarios con la siguiente estructura.
+
+```json
+[
+  {
+    "RUV": "{{RUV}}",  // Identificador único de la verificación proporcionado por el proveedor externo.
+    "createdAt": "{{CREATED_AT}}",  // Fecha y hora en que se creó la solicitud de verificación.
+    "processedAt": "{{PROCESSED_AT}}",  // Fecha y hora en que se procesó la verificación por el sistema.
+    "score": "{{SCORE}}",  // Puntaje asignado por el proveedor de verificación (1-100) en función de los datos del usuario.
+    "status": "{{STATUS}}",  // Estado actual del proceso de verificación (ej. "VERIFICADO", "NO_VERIFICADO").
+    "task_status": "{{TASK_STATUS}}",  // Estado de la tarea de verificación (ej. "ACCEPTED" para aceptada).
+    "transactionIdentifier": "{{TRANSACTION_ID}}",  // Identificador único de la transacción o proceso de verificación.
+    "user": {
+      "dni": "{{USER_DNI}}",  // Documento nacional de identidad del usuario.
+      "email": "{{USER_EMAIL}}",  // Correo electrónico del usuario.
+      "fullName": "{{USER_FULLNAME}}",  // Nombre completo del usuario.
+      "phone": "{{USER_PHONE}}",  // Número de teléfono del usuario.
+    },
+    "userIdentifier": "{{USER_IDENTIFIER}}",  // Identificador único del usuario en el sistema.
+    "userWebhook": "{{USER_WEBHOOK}}"  // Webhook o URL de retorno para notificar al sistema sobre el resultado de la verificación.
+  }
+]
+```
+Ejemplos para validacion: 
+
+ - Primera respuesta: 
+ 
+```json
+[
+  {
+    "RUV": "MGZhYThmMjktZTdiYS00OWFiLThlMjUtYzdkNzY1MzE1Y2ViojBmMWFjODY0LTUwNTctNGM1MC1kZDg",
+    "createdAt": "Wed, 25 Sep 2024 20:52:42 GMT",
+    "processedAt": "Wed, 25 Sep 2024 20:53:25 GMT",
+    "score": null,
+    "status": null,
+    "task_status": "ACCEPTED",
+    "transactionIdentifier": "0faa8f29-e7ba-49ab-8e25-c7d765315ceb",
+    "user": {
+      "dni": "695",
+      "email": "raymundo.howe19@gmail.com",
+      "fullName": "anita wiegand",
+      "phone": "3133057675"
+    },
+    "userIdentifier": "0f1ac864-5057-4c50-a34f-968600f0ac8e",
+    "userWebhook": "http://<IP_DEL_CLUSTER>/users/hook"
+  }
+]
+```
+
+ - Respuesta en proceso: 
+ 
+```json
+[
+  {
+    "RUV": "MGZhYThmMjktZTdiYS00OWFiLThlMjUtYzdkNzY1MzE1Y2ViojBmMWFjODY0LTUwNTctNGM1MC1kZDg",
+    "createdAt": "Wed, 25 Sep 2024 20:52:42 GMT",
+    "processedAt": "Wed, 25 Sep 2024 20:53:25 GMT",
+    "score": 61, // puntajes superiores a 60 dan un status como verificado. 
+    "status": "POR_VERIFICAR",
+    "task_status": "IN_PROCESS",
+    "transactionIdentifier": "0faa8f29-e7ba-49ab-8e25-c7d765315ceb",
+    "user": {
+      "dni": "695",
+      "email": "raymundo.howe19@gmail.com",
+      "fullName": "anita wiegand",
+      "phone": "3133057675"
+    },
+    "userIdentifier": "0f1ac864-5057-4c50-a34f-968600f0ac8e",
+    "userWebhook": "http://<IP_DEL_CLUSTER>/users/hook"
+  }
+]
+```
+
+
+ - Respuesta Negativa: 
+ 
+```json
+[
+  {
+    "RUV": "MGZhYThmMjktZTdiYS00OWFiLThlMjUtYzdkNzY1MzE1Y2ViojBmMWFjODY0LTUwNTctNGM1MC1kZDg",
+    "createdAt": "Wed, 25 Sep 2024 20:52:42 GMT",
+    "processedAt": "Wed, 25 Sep 2024 20:53:25 GMT",
+    "score": 30, // puntajes superiores a 60 dan un status como verificado. 
+    "status": "NO_VERIFICADO",
+    "task_status": "PROCESSED",
+    "transactionIdentifier": "0faa8f29-e7ba-49ab-8e25-c7d765315ceb",
+    "user": {
+      "dni": "695",
+      "email": "raymundo.howe19@gmail.com",
+      "fullName": "anita wiegand",
+      "phone": "3133057675"
+    },
+    "userIdentifier": "0f1ac864-5057-4c50-a34f-968600f0ac8e",
+    "userWebhook": "http://<IP_DEL_CLUSTER>/users/hook"
+  }
+]
+```
+
+ - Respuesta Positiva: 
+ 
+```json
+[
+  {
+    "RUV": "MGZhYThmMjktZTdiYS00OWFiLThlMjUtYzdkNzY1MzE1Y2ViojBmMWFjODY0LTUwNTctNGM1MC1kZDg",
+    "createdAt": "Wed, 25 Sep 2024 20:52:42 GMT",
+    "processedAt": "Wed, 25 Sep 2024 20:53:25 GMT",
+    "score": 61, // puntajes superiores a 60 dan un status como verificado. 
+    "status": "VERIFICADO",
+    "task_status": "PROCESSED",
+    "transactionIdentifier": "0faa8f29-e7ba-49ab-8e25-c7d765315ceb",
+    "user": {
+      "dni": "695",
+      "email": "raymundo.howe19@gmail.com",
+      "fullName": "anita wiegand",
+      "phone": "3133057675"
+    },
+    "userIdentifier": "0f1ac864-5057-4c50-a34f-968600f0ac8e",
+    "userWebhook": "http://<IP_DEL_CLUSTER>/users/hook"
+  }
+]
+```
+Validamos la notificacion que debe llegar al correo
+
+## 5. Autores
+
+Emerson Chaparro Ampa
+Correo electrónico: e.chaparroa@uniandes.edu.co
+
+Cristian Arnulfo Arias Vargas
+Correo electrónico: ca.ariasv1@uniandes.edu.co

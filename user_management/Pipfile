@@ -6,12 +6,16 @@ name = "users"
 [packages]
 wheel = "*"
 sqlalchemy = "*"
-psycopg2 = "*"
 flask = "*"
+psycopg2-binary = "*"
 marshmallow = "*"
 python-abc = "*"
-bcrypt = "*"
+requests = "*"
+httmock = "*"
 python-dotenv = "*"
+exceptiongroup = "*"
+bcrypt = "*"
+
 
 pytest = "~=7.2.0"
 pytest-cov = "~=4.0.0"

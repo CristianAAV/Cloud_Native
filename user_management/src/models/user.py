@@ -10,6 +10,7 @@ class User(Model, Base):
     __tablename__ = 'users'
 
     STATUS = {
+        'WAITING_VERIFICATION': 'POR_VERIFICAR',
         'VERIFIED': 'VERIFICADO',
         'NOT_VERIFIED': 'NO_VERIFICADO'
     }
@@ -38,7 +39,7 @@ class User(Model, Base):
 
         self.password = bcrypt.hashpw(password, salt).decode()
         self.salt = salt.decode()
-        self.status = User.STATUS['NOT_VERIFIED']
+        self.status = User.STATUS['WAITING_VERIFICATION']
         self.set_token()
 
     def set_token(self):

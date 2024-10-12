@@ -1,6 +1,6 @@
 from dotenv import load_dotenv, find_dotenv
 
-env_file = find_dotenv('../.env.development')
+env_file = find_dotenv('.env.development')
 load_dotenv(env_file)
 
 from .errors.errors import ApiError
