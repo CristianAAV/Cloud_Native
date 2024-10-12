@@ -21,5 +21,11 @@ jobs:
           args: https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega3/entrega3.json --output entrega3.json
       - name: Install newman
         run: npm install -g newman
-      - name: Test entrega 3 works
-        run: newman run "entrega3.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose
+      - name: Test entrega 3 - Reset
+        run: newman run "entrega3.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose --folder "Reset"
+      - name: Test entrega 3 - RF-007 Verificar identidad
+        run: newman run "entrega3.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose --folder "RF-007 Verificar identidad"
+        if: always()
+      - name: Test entrega 3 works - RF-006 Tarjetas
+        run: newman run "entrega3.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose --folder "RF-006 Tarjetas"
+        if: always()

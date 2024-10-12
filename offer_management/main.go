@@ -41,10 +41,6 @@ func main() {
 		log.Fatalf("Error deleting enum types: %v", err)
 	}
 
-	if err := migrations.DropUUID4(db.DB); err != nil {
-		log.Fatalf("Error deleting UUID: %v", err)
-	}
-
 	if err := migrations.CreateEnumTypes(db.DB); err != nil {
 		log.Fatalf("Error creating enum types: %v", err)
 	}

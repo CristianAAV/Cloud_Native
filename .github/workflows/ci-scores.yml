@@ -1,0 +1,64 @@
+name: Merge scores feature branch to main
+on:
+  push:
+    branches: 
+      - 'feature/scores'
+jobs:
+  test_scores:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: scores_management_user
+          POSTGRES_PASSWORD: scores_management_pass
+          POSTGRES_DB: scores_management_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U scores_management_user"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    strategy:
+      matrix:
+        python-version: [ 3.10 ]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install pipenv
+        working-directory: ./scores
+        run: pip install pipenv
+      - name: Install dependencies
+        working-directory: ./scores
+        run: pipenv install --dev
+
+      - name: Wait for Postgres
+        run: until pg_isready -h localhost -U scores_management_user -p 5432; do sleep 1; done
+        working-directory: ./scores
+
+      - name: Run unit tests
+        working-directory: ./scores
+        run: pipenv run pytest --cov=src -v -s --cov-fail-under=70
+  merge:
+    runs-on: ubuntu-latest
+    needs: test_scores
+    if: success()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "e.chaparroa@uniandes.edu.co"
+          git config --global user.name "echaparroa-uniandes"
+
+      - name: Merge branch to main
+        run: |
+          git fetch origin
+          git checkout feature/scores
+          git rebase origin/main --strategy-option theirs
+          git checkout main
+          git merge feature/scores --allow-unrelated-histories --no-edit
+          git push origin main --force

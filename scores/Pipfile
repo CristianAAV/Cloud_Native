@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "scores"
+
+[packages]
+wheel = "*"
+sqlalchemy = "*"
+flask = "*"
+psycopg2-binary = "*"
+marshmallow = "*"
+python-abc = "*"
+requests = "*"
+httmock = "*"
+python-dotenv = "*"
+exceptiongroup = "*"
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+pytest-env = "*"

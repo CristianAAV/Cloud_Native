@@ -15,7 +15,3 @@ func CreateUUID4(db *gorm.DB) error {
 func DropEnumTypes(db *gorm.DB) error {
 	return db.Exec("DROP TYPE IF EXISTS package_size;").Error
 }
-
-func DropUUID4(db *gorm.DB) error {
-	return db.Exec("DROP EXTENSION IF EXISTS \"uuid-ossp\";").Error
-}

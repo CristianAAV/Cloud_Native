@@ -1,0 +1,338 @@
+###################################
+# SCORES
+###################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scores
+  labels:
+    app: scores
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scores
+
+  template:
+    metadata:
+      labels:
+        app: scores
+    spec:
+      containers:
+        - name: scores
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/scores:1.0
+          env:
+            - name: "DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_user
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_pass
+            - name: "DB_HOST"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_host
+            - name: "DB_PORT"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_port
+            - name: "DB_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_name
+            - name: "USERS_PATH"
+              value: "http://user-management-service"
+          ports:
+            - containerPort: 3012
+          imagePullPolicy: Always
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: scores-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3012
+    type: HTTP
+    requestPath: /scores/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: scores-management-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "scores-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: scores
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3012
+      nodePort: 31012
+###################################
+# rf003-MANAGEMENT
+###################################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rf003-management
+  labels:
+    app: rf003-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rf003-management
+
+  template:
+    metadata:
+      labels:
+        app: rf003-management
+    spec:
+      containers:
+        - name: rf003-management
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/rf003_management_container:1.0.7
+          env:
+            - name: "DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_user
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_pass
+            - name: "DB_HOST"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_host
+            - name: "DB_PORT"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_port
+            - name: "DB_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_name
+            - name: "USERS_PATH"
+              value: "http://user-management-service"
+            - name: "POSTS_PATH"
+              value: "http://post-management-service"
+            - name: "ROUTES_PATH"
+              value: "http://route-management-service"
+            - name: "OFFERS_PATH"
+              value: "http://offer-management-service"
+            - name: "SCORES_PATH"
+              value: "http://scores-management-service"
+          ports:
+            - containerPort: 3013
+          imagePullPolicy: Always
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: rf003-management-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3013
+    type: HTTP
+    requestPath: /rf003/posts/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rf003-management-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "rf003-management-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: rf003-management
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3013
+      nodePort: 32022
+###################################
+# rf004-MANAGEMENT
+###################################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rf004-management
+  labels:
+    app: rf004-management
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rf004-management
+
+  template:
+    metadata:
+      labels:
+        app: rf004-management
+    spec:
+      containers:
+        - name: rf004-management
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/rf004:0.0.10
+          ports:
+            - containerPort: 3000
+          env:
+            - name: "DB_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_user
+            - name: "DB_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_pass
+            - name: "DB_HOST"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_host
+            - name: "DB_PORT"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_port
+            - name: "DB_NAME"
+              valueFrom:
+                secretKeyRef:
+                  name: appsecrets 
+                  key: db_name
+            - name: "USERS_PATH"
+              value: "http://user-management-service"
+            - name: "POSTS_PATH"
+              value: "http://post-management-service"
+            - name: "ROUTES_PATH"
+              value: "http://route-management-service"
+            - name: "OFFERS_PATH"
+              value: "http://offer-management-service"
+            - name: "SCORES_PATH"
+              value: "http://scores-management-service"
+          imagePullPolicy: Always
+      volumes:
+        - name: appsecrets-volume
+          secret:
+            secretName: appsecrets
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: rf004-management-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3000
+    type: HTTP
+    requestPath: /rf004/posts/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rf004-management-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "rf004-management-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: rf004-management
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+      nodePort: 32023
+###################################
+# RF005
+###################################
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rf005
+  labels:
+    app: rf005
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rf005
+
+  template:
+    metadata:
+      labels:
+        app: rf005
+    spec:
+      containers:
+        - name: rf005
+          image: us-docker.pkg.dev/uandes-native-433403/cloud-native-xcode/rf005-posts-id_container:1.0.0
+          env:
+            - name: "USERS_PATH"
+              value: "http://user-management-service"
+            - name: "POSTS_PATH"
+              value: "http://post-management-service"
+            - name: "ROUTES_PATH"
+              value: "http://route-management-service"
+            - name: "OFFERS_PATH"
+              value: "http://offer-management-service"
+            - name: "SCORES_PATH"
+              value: "http://scores-management-service"
+          ports:
+            - containerPort: 3007
+          imagePullPolicy: Always
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: rf005-config
+spec:
+  healthCheck:
+    checkIntervalSec: 30
+    port: 3007
+    type: HTTP
+    requestPath: /rf005/posts/ping
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rf005-management-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "rf005-config"}'  
+spec:
+  type: NodePort
+  selector:
+    app: rf005
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3007
+      nodePort: 31015

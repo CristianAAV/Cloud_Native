@@ -1,0 +1,33 @@
+name: Merge rf005 feature branch to main
+
+on:
+  pull_request:
+    branches: [ "main", "**/rf005-posts-id**"]
+    paths:
+      - 'rf005-posts-id/**'
+
+jobs:
+  test_rf005:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [ 3.11 ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        working-directory: ./rf005-posts-id
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov
+
+      - name: Run unit tests
+        working-directory: ./rf005-posts-id
+        run: pytest --cov=app test.py -v -s --cov-fail-under=70

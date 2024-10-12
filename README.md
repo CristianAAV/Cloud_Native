@@ -5,6 +5,10 @@ Para la entrega 1, se desarrollaron los servicios solicitados segun el siguiente
 - [Gestión de trayectos](#gestión-de-trayectos)
 - [Gestión de publicaciones](#gestión-de-publicaciones)
 - [Gestión de ofertas](#gestión-de-ofertas)
+- [Scores](#scores)
+- [RF003](#rf003)
+- [RF004](#rf004)
+- [RF005](#rf005)
 
 # Gestión de usuarios
 
@@ -1034,3 +1038,661 @@ Asegúrate de reemplazar `TOKEN` con el token real obtenido durante el proceso d
 
 Juan Camilo Vallejos Guerrero  
 Correo electrónico: j.vallejosg@uniandes.edu.co
+
+# Scores
+
+Este servicio corresponde a la gestion de la nueva entidad scores.
+
+## Índice
+
+1. [Estructura](#estructura)
+2. [Ejecución](#ejecución)
+3. [Uso](#uso)
+4. [Pruebas](#pruebas)
+5. [Otras Caracteristicas](#otras-caracteristicas)
+6. [Autor](#autor)
+
+
+## Estructura
+Segun lo recomendado se construyeron las siguientes carpetas
+- **src:** LA cual contiene el codigo y logica del servicio
+  - **src/models:** Esta carpeta contiene la capa de persistencia, donde se definen el modelo de la entidad usuario.
+  - **src/commands:** Contiene el codigo para cada caso de uso, por ejemplo "crear score", "obtener score"
+  - **src/blueprints:** Esta carpeta alberga la capa de aplicación de nuestro microservicio, encargada de definir y desarrollar cada servicio API que exponemos.
+  - **src/errors:** Para devolver errores HTTP en los blueprints
+- **tests:** En la cual estan implementados los tests unitarios
+- **Dockerfile:** Define cómo se debe construir la imagen de la aplicación.
+- **docker-compose.yml:** Encargado de montar la base de datos y la aplicación.
+- **.env:** Almacena variables de entorno como configuraciones y credenciales de manera segura
+
+## Ejecución
+En la raiz del servicio utilizar como plantilla el archivo "env.template" y crear uno denominado "env.development", con la siguiente informacion:
+* DB_USER=admin
+* DB_PASSWORD=adminpassword
+* DB_HOST=localhost
+* DB_PORT=5432
+* DB_NAME=scores_management_db
+* USERS_PATH=http://localhost:3000
+* 
+Seguidamente, ejecutar el siguiente comando:
+```bash
+docker-compose up --build
+```
+## Uso
+Despues de iniciarse los contenedores, puede ejecutar los endpoints de acuerdo a la siguiente detale:
+El servicio de gestión de usuarios permite crear usuarios y validar la identidad de un usuario por medio de tokens.
+
+  - **Creación de scores**
+    - **Método:** POST  
+    - **Ruta:** /scores
+    - **Parámetros:** N/A
+    - **Encabezados:** Authorization: Bearer token
+    - **Cuerpo:**
+```json
+{
+  "offerId": "identificador de la oferta",
+  "utility": "utilidad"
+}
+```
+  - **Consulta de Score**
+    - **Método:** GET
+    - **Ruta:** /scores/offer/<id>
+    - **Parámetros:** id: identificador de score
+    - **Encabezados:** Authorization: Bearer token
+    - **Cuerpo:** N/A
+  - **Consulta de salud del servicio**
+    - **Método:** GET
+    - **Ruta:** /scores/ping
+    - **Parámetros:** N/A
+    - **Encabezados:** N/A
+    - **Cuerpo:** N/A
+  - **Restablecer base de datos**
+    - **Método:** POST
+    - **Ruta:** /scores/reset
+    - **Parámetros:** N/A
+    - **Encabezados:** N/A
+    - **Cuerpo:** N/A
+
+## Pruebas
+- Ejecutar la BD de pruebas
+```
+docker run --name postgres-pruebas-local \
+  -e POSTGRES_USER=scores_management_user \
+  -e POSTGRES_PASSWORD=scores_management_pass \
+  -e POSTGRES_DB=scores_management_db \
+  -p 5432:5432 \
+  -d postgres:13
+```
+- Dirigirse a la carpeta  "scores"
+- Activar el entorno virtual, puede utilizar los siguientes comandos en linux:
+  - pipenv shell  
+- Instalar las dependencias:
+  - pipenv install
+- Ejecutar las pruebas:
+  - pytest --cov-fail-under=70 --cov=src
+
+## Otras Caracteristicas
+- El servicio fue desarrollado en  Python con Flask
+- Para la persistencia en base de datos, se utilizó Postgresql
+
+## Autor
+Emerson Chaparro Ampa
+- correo: e.chaparroa@uniandes.edu.co
+
+# RF003
+
+Este servicio corresponde a la creación de publicaciones.
+
+## Índice
+
+1. [Estructura](#estructura)
+2. [Ejecución](#ejecución)
+3. [Uso](#uso)
+4. [Pruebas en postman](#Otras\_Caracteristicas)
+5. [Autor](#autor)
+
+## 1. Estructura
+
+La estructura del proyecto es la siguiente:
+
+- **app.py**: este archivo contiene el código fuente del microservicio.
+- **test.py**: este archivo contiene los tests de `app.py`.
+- **Dockerfile**: este archivo contiene la imagen que se va a crear para ser usada en Kubernetes.
+
+
+## 2. Ejecucion
+
+El siguiente microservicio puede ser desplegado en Kubernetes a través del siguiente comando:
+
+```sh
+cd deployment
+kubectl apply -f k8s-new-services-deployment.yaml
+```
+Con esto bastaría para desplegar el microservicio en caso de que sea necesario desplegarlo en Kubernetes.
+
+## 3. Uso
+
+Una vez que los microservicios estén en ejecución, puedes hacer solicitudes al servidor en la siguiente dirección:
+
+**URL del microservicio:**  
+`http://<IP_DEL_CLUSTER>/rf003/posts`
+
+#### Descripción
+
+| Método   | Ruta           | Parámetros | Encabezados                   |
+|----------|----------------|------------|-------------------------------|
+| `POST`   | `/rf003/posts` | N/A        | `Authorization: Bearer <token>` |
+
+#### Cuerpo de la solicitud
+
+El cuerpo de la solicitud debe contener los siguientes campos en formato JSON:
+
+```json
+{
+    "flightId": "identificador del vuelo",
+    "expireAt": "fecha y hora máxima para recibir ofertas en formato ISO",
+    "plannedStartDate": "fecha y hora planeada de salida en formato ISO",
+    "plannedEndDate": "fecha y hora planeada de llegada en formato ISO",
+    "origin": {
+        "airportCode": "código del aeropuerto de origen",
+        "country": "nombre del país de origen"
+    },
+    "destiny": {
+        "airportCode": "código del aeropuerto de destino",
+        "country": "nombre del país de destino"
+    },
+    "bagCost": "costo de envío de maleta en dólares"
+}
+```
+
+### Campos:
+
+- **flightId**: Identificador único del vuelo.
+- **expireAt**: Fecha y hora máxima en la que se recibirán ofertas sobre la publicación (en formato ISO).
+- **plannedStartDate**: Fecha y hora planeada de salida del vuelo (en formato ISO).
+- **plannedEndDate**: Fecha y hora planeada de llegada del vuelo (en formato ISO).
+- **origin**: Información sobre el aeropuerto de origen, con los siguientes subcampos:
+  - **airportCode**: Código del aeropuerto de origen.
+  - **country**: Nombre del país de origen.
+- **destiny**: Información sobre el aeropuerto de destino, con los siguientes subcampos:
+  - **airportCode**: Código del aeropuerto de destino.
+  - **country**: Nombre del país de destino.
+- **bagCost**: Costo de envío de la maleta en dólares.
+
+Recuerda reemplazar `<IP_DEL_CLUSTER>` y `<token>` con la dirección IP del clúster y el token de autenticación obtenido anteriormente.
+
+### 4. Pruebas postman
+
+#### 4.1 Creación del Usuario
+
+Primero, es necesario crear un usuario para poder interactuar con el sistema. Para ello, envía una solicitud `POST` al endpoint de creación de usuarios:
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/users`
+
+**Ejemplo de solicitud `POST` para crear un usuario:**
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "juan1",
+  "password": "tuContraseñaSegura",
+  "email": "j.vallejos1g@uniandes.edu.co",
+  "dni": "123456789",
+  "fullName": "Juan Vallejos",
+  "phoneNumber": "+573001234567"
+}'
+```
+
+#### 4.2 Obtención del Token
+Una vez creado el usuario, debes autenticarte para obtener un token que te permitirá hacer solicitudes al microservicio rf003.
+
+URL para obtener el token de autenticación:
+http://<IP_DEL_CLUSTER>/users/auth
+
+Ejemplo de solicitud POST para autenticar y obtener el token:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users/auth' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "juan1",
+  "password": "tuContraseñaSegura"
+}'
+```
+
+El token obtenido deberá ser incluido en las siguientes solicitudes a los endpoints.
+
+#### 4.3 Solicitudes al Microservicio rf003
+Después de obtener el token de autenticación, ya puedes interactuar con el microservicio rf003. Aquí tienes un ejemplo de cómo crear un post utilizando el token.
+
+URL del microservicio rf003:
+http://<IP_DEL_CLUSTER>/rf003/posts
+
+Ejemplo de solicitud POST para crear un post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf003/posts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data '{
+    "flightId": "2",
+    "expireAt": "2024-09-15T23:59:59Z",
+    "plannedStartDate": "2024-09-22T05:17:59.814Z",
+    "plannedEndDate": "2024-09-28T05:17:59.814Z",
+    "origin": {
+        "airportCode": "BOG",
+        "country": "Colombia"
+    },
+    "destiny": {
+        "airportCode": "LGW",
+        "country": "Inglaterra"
+    },
+    "bagCost": 688
+}'
+```
+
+Recuerda reemplazar <IP_DEL_CLUSTER> por la dirección IP del clúster y <TOKEN> por el token de autenticación que obtuviste en el paso anterior.
+
+## 5. Autor
+
+Juan Camilo Vallejos Guerrero  
+Correo electrónico: j.vallejosg@uniandes.edu.co
+
+
+
+# RF004
+
+Este servicio corresponde a crear una oferta para una publicación.
+
+## Índice
+
+1. [Disposición](#1-disposición)
+2. [Despliegue](#2-despliegue)
+3. [Consumo](#3-consumo)
+4. [Pruebas en postman](#4-pruebas-postman-2)
+5. [Autor](#5-autor-2)
+
+## 1. Disposición
+
+La disposición del servicio es la siguiente:
+
+/rf004
+  |-mocks // mocks
+  |  |-mock_http.go
+  |  |-mock_authenticator.go
+  |-go.mod // manejador de versiones
+  |-Dockerfile // Dockerfile
+  |-utils // utilidades comunes
+  |  |-config.go
+  |  |-auth.go
+  |  |-http.go
+  |  |-parse.go
+  |-go.sum
+  |-.gitignore
+  |-model // modelos
+  |  |-models.go
+  |-service // servicios de llamado externos + tests
+  |  |-get_route_test.go
+  |  |-create_utility_test.go
+  |  |-create_offer_test.go
+  |  |-delete_offer_test.go
+  |  |-get_route.go
+  |  |-delete_offer.go
+  |  |-interface.go
+  |  |-get_post_test.go
+  |  |-create_utility.go
+  |  |-create_offer.go
+  |  |-get_post.go
+  |-test.sh // script para correr las pruebas
+  |-routes // rutas de gin + tests
+  |  |-post.go
+  |  |-post_test.go
+  |-coverage // carpeta de coverage de go (creada automáticamente sin versionar)
+  |  |-coverage.out
+  |-main.go // entrypoint
+  |-main_test.go
+
+
+## 2. Despliegue
+
+El siguiente microservicio puede ser desplegado en Kubernetes a través del siguiente comando:
+
+```sh
+cd deployment
+kubectl apply -f k8s-new-services-deployment.yaml
+```
+Con esto bastaría para desplegar el microservicio en caso de que sea necesario desplegarlo en Kubernetes. Es importante tener en cuenta que se tiene que tener la última imágen y esta imágen debe ser accesible desde su cluster.
+
+## 3. Consumo
+
+Una vez que los microservicios estén en ejecución, puedes hacer solicitudes al servidor en la siguiente dirección:
+
+**URL del microservicio:**  
+`http://<IP_DEL_CLUSTER>/rf005/posts/<ID>`
+
+#### Descripción
+
+La siguiente es la definición de endpoint que permite crear una Oferta cumpliendo con los criterios de aceptación definidos para el requerimiento RF-004-Posts.
+
+#### Método
+POST
+
+#### Ruta
+/rf004/posts/{id}/offer
+
+#### Parámetros
+Identificador de la publicación a la que se quiere asociar la oferta.
+
+#### Encabezados
+`Authorization: Bearer <token>`
+
+#### Cuerpo
+```json
+{
+  "description": "descripción del paquete a llevar",
+  "size": "LARGE | MEDIUM | SMALL",
+  "fragile": "booleano que indica si es un paquete delicado o no",
+  "offer": "valor en dólares de la oferta para llevar el paquete"
+}
+
+
+### 4. Pruebas postman
+
+#### 4.1 Creación del Usuario
+
+Primero, es necesario crear un usuario para poder interactuar con el sistema. Para ello, envía una solicitud `POST` al endpoint de creación de usuarios:
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/users`
+
+**Ejemplo de solicitud `POST` para crear un usuario:**
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "andres",
+  "password": "tuContraseñaSegura",
+  "email": "af.losada@uniandes.edu.co",
+  "dni": "123456789",
+  "fullName": "AndresLosada",
+  "phoneNumber": "+573001234567"
+}'
+```
+
+#### 4.2 Obtención del Token
+Una vez creado el usuario, debes autenticarte para obtener un token que te permitirá hacer solicitudes al microservicio rf003.
+
+URL para obtener el token de autenticación:
+http://<IP_DEL_CLUSTER>/users/auth
+
+Ejemplo de solicitud POST para autenticar y obtener el token:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users/auth' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "andres",
+  "password": "tuContraseñaSegura"
+}'
+```
+
+El token obtenido deberá ser incluido en las siguientes solicitudes a los endpoints.
+
+#### 4.3 Solicitudes al Microservicio rf004
+Después de obtener el token de autenticación, ya puedes interactuar con el microservicio rf004. Aquí tienes un ejemplo de cómo crear un post utilizando el token.
+
+URL del microservicio rf004:
+http://<IP_DEL_CLUSTER>/rf004/posts
+
+Ejemplo de solicitud POST para crear un post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf004/posts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data '{
+  "description": "descripción del paquete a llevar",
+  "size": "LARGE | MEDIUM | SMALL",
+  "fragile": "booleano que indica si es un paquete delicado o no",
+  "offer": "valor en dólares de la oferta para llevar el paquete"
+}'
+```
+
+## 5. Autor
+
+Andrés Felipe Losada Luna
+Correo electrónico: af.losada@uniandes.edu.co
+
+
+# RF005
+
+Este servicio corresponde a consultar una publicación y mostrar todas las ofertas asociadas a esa publicación ordenadas de manera descendente según su utilidad. Esto facilita la identificación rápida de la oferta más valiosa, optimizando el proceso de selección de ofertas.
+
+
+
+## Índice
+
+1. [Disposición](#1-disposición)
+2. [Despliegue](#2-despliegue)
+3. [Consumo](#3-consumo)
+4. [Pruebas en postman](#4-pruebas-postman-2)
+5. [Autor](#5-autor-2)
+
+## 1. Disposición
+
+La disposición del servicio es la siguiente:
+
+- **app.py**: este archivo contiene el código fuente del microservicio.
+- **test.py**: este archivo contiene los tests de `app.py`.
+- **Dockerfile**: este archivo contiene la imagen que se va a crear para ser usada en Kubernetes.
+
+
+## 2. Despliegue
+
+El siguiente microservicio puede ser desplegado en Kubernetes a través del siguiente comando:
+
+```sh
+cd deployment
+kubectl apply -f k8s-new-services-deployment.yaml
+```
+Con esto bastaría para desplegar el microservicio en caso de que sea necesario desplegarlo en Kubernetes.
+
+## 3. Consumo
+
+Una vez que los microservicios estén en ejecución, puedes hacer solicitudes al servidor en la siguiente dirección:
+
+**URL del microservicio:**  
+`http://<IP_DEL_CLUSTER>/rf005/posts/<ID>`
+
+#### Descripción
+
+| Método   | Ruta                | Parámetros | Encabezados                    |
+|----------|---------------------|------------|--------------------------------|
+| `GET`    | `/rf005/posts/<ID>` | N/A        | `Authorization: Bearer <token>`|
+
+	
+Recuerda reemplazar `<IP_DEL_CLUSTER>`, <ID> y `<token>` con la dirección IP del clúster, el id de la publicacion que desea buscar y el token de autenticación obtenido anteriormente.
+```
+### Respuesta:
+Response Status: `200`
+{
+    "data": {
+        "id": identificador de la publicación,
+        "expireAt": fecha y hora máxima en que se reciben ofertas en formato IDO,
+        "route": {
+            "id": identificador del trayecto,
+            "flightId": identificador del vuelo,
+            "origin": {
+                "airportCode": código del aeropuerto de origen,
+                "country": nombre del país de origen
+            },
+            "destiny": {
+                "airportCode": código del aeropuerto de destino,
+                "country": nombre del país de destino
+            },
+            "bagCost": costo de envío de maleta
+        },
+        "plannedStartDate": fecha y hora en que se planea el inicio del viaje en formato ISO,
+        "plannedEndDate": fecha y hora en que se planea la finalización del viaje en formato ISO,
+        "createdAt": fecha y hora de creación de la publicación en formato ISO,
+        "offers": [
+            {
+                "id": identificador de la oferta,
+                "userId": identificador del usuario que hizo la oferta,
+                "description": descripción del paquete a llevar,
+                "size": LARGE ó MEDIUM ó SMALL,
+                "fragile": booleano que indica si es un paquete delicado o no,
+                "offer": valor en dólares de la oferta para llevar el paquete,
+                "score": utilidad que deja llevar este paquete en la maleta,
+                "createdAt": fecha y hora de creación de la publicación en formato ISO
+            }
+        ]
+    }
+}
+```
+
+### Campos:
+- **ID:** Identificador de la publicación
+- **ExpireAt:** Fecha y hora máxima en que se reciben ofertas (formato ISO)
+- **Route:**
+  - **ID:** Identificador del trayecto
+  - **FlightId:** Identificador del vuelo
+  - **Origin:**
+    - **AirportCode:** Código del aeropuerto de origen
+    - **Country:** Nombre del país de origen
+  - **Destiny:**
+    - **AirportCode:** Código del aeropuerto de destino
+    - **Country:** Nombre del país de destino
+  - **BagCost:** Costo de envío de maleta
+- **PlannedStartDate:** Fecha y hora en que se planea el inicio del viaje (formato ISO)
+- **PlannedEndDate:** Fecha y hora en que se planea la finalización del viaje (formato ISO)
+- **CreatedAt:** Fecha y hora de creación de la publicación (formato ISO)
+- **Offers:**
+  - **ID:** Identificador de la oferta
+  - **UserId:** Identificador del usuario que hizo la oferta
+  - **Description:** Descripción del paquete a llevar
+  - **Size:** LARGE, MEDIUM o SMALL
+  - **Fragile:** Booleano que indica si es un paquete delicado o no
+  - **Offer:** Valor en dólares de la oferta para llevar el paquete
+  - **Score:** Utilidad que deja llevar este paquete en la maleta
+  - **CreatedAt:** Fecha y hora de creación de la oferta (formato ISO)
+
+### 4. Pruebas postman
+
+#### 4.1 Creación del Usuario
+
+Primero, es necesario crear un usuario para poder interactuar con el sistema. Para ello, envía una solicitud `POST` al endpoint de creación de usuarios:
+
+**URL para la creación del usuario:**  
+`http://<IP_DEL_CLUSTER>/users`
+
+**Ejemplo de solicitud `POST` para crear un usuario:**
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "juan1",
+  "password": "tuContraseñaSegura",
+  "email": "j.vallejos1g@uniandes.edu.co",
+  "dni": "123456789",
+  "fullName": "Juan Vallejos",
+  "phoneNumber": "+573001234567"
+}'
+```
+
+#### 4.2 Obtención del Token
+Una vez creado el usuario, debes autenticarte para obtener un token que te permitirá hacer solicitudes al microservicio rf003.
+
+URL para obtener el token de autenticación:
+http://<IP_DEL_CLUSTER>/users/auth
+
+Ejemplo de solicitud POST para autenticar y obtener el token:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/users/auth' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "username": "juan1",
+  "password": "tuContraseñaSegura"
+}'
+```
+
+El token obtenido deberá ser incluido en las siguientes solicitudes a los endpoints.
+
+#### 4.3 Solicitudes al Microservicio rf003
+Después de obtener el token de autenticación, ya puedes interactuar con el microservicio rf003. Aquí tienes un ejemplo de cómo crear un post utilizando el token.
+
+URL del microservicio rf003:
+http://<IP_DEL_CLUSTER>/rf003/posts
+
+Ejemplo de solicitud POST para crear un post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf003/posts' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data '{
+    "flightId": "2",
+    "expireAt": "2024-09-15T23:59:59Z",
+    "plannedStartDate": "2024-09-22T05:17:59.814Z",
+    "plannedEndDate": "2024-09-28T05:17:59.814Z",
+    "origin": {
+        "airportCode": "BOG",
+        "country": "Colombia"
+    },
+    "destiny": {
+        "airportCode": "LGW",
+        "country": "Inglaterra"
+    },
+    "bagCost": 688
+}'
+```
+
+#### 4.4 Solicitudes al Microservicio rf004
+Despues de las solicitudes de creacion del post se realizan las solicitudes al servicio rf004 para crear las ofertas y la utilidad.
+
+URL del microservicio rf004:
+http://<IP_DEL_CLUSTER>/rf004/posts/<id>/offers
+
+Ejemplo de solicitud POST para crear una post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf004/posts/<id>/offers' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+--data '{
+					"description": descripción del paquete a llevar,
+					"size": LARGE ó MEDIUM ó SMALL,
+					"fragile" : booleano que indica si es un paquete delicado o no,
+					"offer": valor en dólares de la oferta para llevar el paquete
+				}'
+```
+
+Recuerda reemplazar `<IP_DEL_CLUSTER>`, <ID> y `<TOKEN>` con la dirección IP del clúster, el id de la publicacion que desea buscar y el token de autenticación obtenido anteriormente.
+
+
+#### 4.5 Solicitudes al Microservicio rf005
+Despues de realizadas los pasos anteriores sigue realizar la solicitud get al microservicio rf005 para obtener la publicacion con las ofertas creadas. 
+
+URL del microservicio rf004:
+http://<IP_DEL_CLUSTER>/rf005/posts/<id>
+
+Ejemplo de solicitud GET para crear una post:
+
+```bash
+curl --location 'http://<IP_DEL_CLUSTER>/rf005/posts/<id>' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer <TOKEN>' \
+```
+
+Recuerda reemplazar `<IP_DEL_CLUSTER>`, <ID> y `<TOKEN>` con la dirección IP del clúster, el id de la publicacion que desea buscar y el token de autenticación obtenido anteriormente.
+
+## 5. Autor
+
+Cristian Arnulfo Arias Vargas  
+Correo electrónico: ca.ariasv1@uniandes.edu.co
+

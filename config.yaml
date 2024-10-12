@@ -10,6 +10,7 @@ team:
       - user: e.chaparroa@uniandes.edu.co
         percentage: 25
 board: https://github.com/orgs/MISW-4301-Desarrollo-Apps-en-la-Nube/projects/163
+url: 34.149.74.18
 user-management:
   folder: user_management
   port: 3000
@@ -30,3 +31,23 @@ route-management:
   port: 3002
   authors:
     - af.losada@uniandes.edu.co
+scores:
+  folder: scores
+  port: 3012
+  authors:
+    - e.chaparroa@uniandes.edu.co
+rf003:
+  folder: rf003
+  port: 3013
+  authors:
+    - j.vallejosg@uniandes.edu.co
+rf004:
+  folder: rf004
+  port: 3000
+  authors:
+    - af.losada@uniandes.edu.co
+rf005:
+  folder: rf005
+  port: 3007
+  authors:
+    - ca.ariasv1@uniandes.edu.co

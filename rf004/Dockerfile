@@ -18,7 +18,7 @@ COPY . .
 RUN env GOOS=linux GOARCH=amd64 go build -o main .
 
 # Expose the port on which the server will run
-EXPOSE 3003
+EXPOSE 3000
 
 # Run the Go application
 CMD ["./main"]

@@ -1,0 +1,58 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.5, pytest-7.2.0, pluggy-1.5.0
+rootdir: /Users/juan/Herd/s202414-proyecto-grupo5/rf003
+plugins: Faker-26.0.0, cov-4.0.0
+collected 10 items
+
+test.py ..........                                                       [100%]
+
+=============================== warnings summary ===============================
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760
+  /opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:760: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    parts = parts or [ast.Str("")]
+
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:757: 14 warnings
+  /opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:757: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    _convert(elem) if is_dynamic else ast.Str(s=elem)
+
+../../../../../opt/homebrew/Cellar/python@3.12/3.12.5/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py:587: 14 warnings
+  /opt/homebrew/Cellar/python@3.12/3.12.5/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py:587: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+    return Constant(*args, **kwargs)
+
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:764: 22 warnings
+  /opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:764: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    if isinstance(p, ast.Str) and isinstance(ret[-1], ast.Str):
+
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:765: 20 warnings
+  /opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:765: DeprecationWarning: Attribute s is deprecated and will be removed in Python 3.14; use value instead
+    ret[-1] = ast.Str(ret[-1].s + p.s)
+
+../../../../../opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:765: 10 warnings
+  /opt/homebrew/lib/python3.12/site-packages/werkzeug/routing/rules.py:765: DeprecationWarning: ast.Str is deprecated and will be removed in Python 3.14; use ast.Constant instead
+    ret[-1] = ast.Str(ret[-1].s + p.s)
+
+test.py: 10 warnings
+  /opt/homebrew/lib/python3.12/site-packages/flask/testing.py:71: DeprecationWarning: 'werkzeug.urls.url_parse' is deprecated and will be removed in Werkzeug 2.4. Use 'urllib.parse.urlsplit' instead.
+    url = url_parse(path)
+
+test.py::test_create_publication_success
+test.py::test_create_publication_invalid_dates
+test.py::test_create_publication_route_not_found
+test.py::test_create_publication_response_content
+  /Users/juan/Herd/s202414-proyecto-grupo5/rf003/app.py:78: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    _now = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform darwin, python 3.12.5-final-0 ----------
+Name     Stmts   Miss  Cover   Missing
+--------------------------------------
+app.py      77     11    86%   19-20, 32-33, 82, 86, 98, 123-126, 129
+--------------------------------------
+TOTAL       77     11    86%
+
+======================= 10 passed, 99 warnings in 0.78s ========================
